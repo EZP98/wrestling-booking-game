@@ -3,6 +3,8 @@ import { useGameStore } from '../store/gameStore';
 import { COLORS, BRAND_COLORS } from '../styles/theme';
 import { Badge } from '../components/StatBar';
 import { CalendarEvent, ShowTier } from '../types';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Calendar, MapPin, Star, Check, X } from 'lucide-react';
 
 const TIER_BADGE_COLORS: Record<ShowTier, string> = {
   Weekly: COLORS.textMuted,
@@ -13,6 +15,15 @@ const TIER_BADGE_COLORS: Record<ShowTier, string> = {
 };
 
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+const stagger = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.04 } },
+};
+const fadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+};
 
 export function CalendarPage() {
   const { calendar, venues, game, bookEvent } = useGameStore();
@@ -43,152 +54,208 @@ export function CalendarPage() {
   };
 
   return (
-    <div className="fade-in" style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <div style={{ padding: '16px 20px', borderBottom: `1px solid ${COLORS.border}`, flexShrink: 0 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <h1 style={{ fontSize: 20, color: COLORS.white, letterSpacing: 3 }}>CALENDAR {game.year}</h1>
-            <div style={{ display: 'flex', gap: 6 }}>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className="flex h-full overflow-hidden bg-black"
+    >
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="px-5 py-4 border-b border-[#1a1a1a] shrink-0">
+          <div className="flex justify-between items-center mb-3">
+            <div className="flex items-center gap-3">
+              <Calendar className="w-5 h-5 text-[#B8860B]" />
+              <h1 className="text-xl text-white tracking-[3px] font-bold">CALENDAR {game.year}</h1>
+            </div>
+            <div className="flex gap-1.5">
               <Badge text={`WEEK ${game.week}`} color={COLORS.goldLight} />
               <Badge text={MONTH_NAMES[game.month - 1]} color={COLORS.blue} />
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <div className="flex gap-1.5 flex-wrap">
             {['ALL', 'Weekly', 'Monthly PLE', 'Big 4', 'WrestleMania', 'Cross-Promo'].map(t => (
-              <button key={t} onClick={() => setTierFilter(t)} style={{
-                padding: '4px 10px', borderRadius: 16, fontSize: 10, fontWeight: 'bold', cursor: 'pointer',
-                border: `1px solid ${tierFilter === t ? (TIER_BADGE_COLORS[t as ShowTier] || COLORS.gold) : COLORS.border}`,
-                background: tierFilter === t ? `${TIER_BADGE_COLORS[t as ShowTier] || COLORS.gold}22` : 'transparent',
-                color: tierFilter === t ? COLORS.white : COLORS.textMuted,
-              }}>{t}</button>
+              <motion.button
+                key={t}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setTierFilter(t)}
+                className="px-2.5 py-1 rounded-full text-[10px] font-bold cursor-pointer transition-colors"
+                style={{
+                  border: `1px solid ${tierFilter === t ? (TIER_BADGE_COLORS[t as ShowTier] || COLORS.gold) : COLORS.border}`,
+                  background: tierFilter === t ? `${TIER_BADGE_COLORS[t as ShowTier] || COLORS.gold}22` : 'transparent',
+                  color: tierFilter === t ? COLORS.white : COLORS.textMuted,
+                }}
+              >
+                {t}
+              </motion.button>
             ))}
           </div>
         </div>
 
-        <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+        <div className="flex-1 overflow-auto px-5 py-4">
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-3 gap-3"
+          >
             {Object.entries(byMonth).map(([monthStr, events]) => {
               const month = parseInt(monthStr);
               const isCurrent = month === game.month;
               return (
-                <div key={month} style={{
-                  background: COLORS.bgCard,
-                  border: `1px solid ${isCurrent ? COLORS.goldLight + '66' : COLORS.border}`,
-                  borderRadius: 10, padding: 14, minHeight: 120,
-                  boxShadow: isCurrent ? `0 0 12px ${COLORS.goldLight}15` : 'none',
-                }}>
-                  <div style={{
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    marginBottom: 10, paddingBottom: 8, borderBottom: `1px solid ${COLORS.border}`,
-                  }}>
-                    <span style={{
-                      color: isCurrent ? COLORS.goldLight : COLORS.white,
-                      fontSize: 13, fontWeight: 'bold', letterSpacing: 1,
-                    }}>
+                <motion.div
+                  key={month}
+                  variants={fadeUp}
+                  className="bg-[#0a0a0a] rounded-xl p-3.5 min-h-[120px]"
+                  style={{
+                    border: `1px solid ${isCurrent ? COLORS.goldLight + '66' : COLORS.border}`,
+                    boxShadow: isCurrent ? `0 0 12px ${COLORS.goldLight}15` : 'none',
+                  }}
+                >
+                  <div className="flex justify-between items-center mb-2.5 pb-2 border-b border-[#1a1a1a]">
+                    <span
+                      className="text-[13px] font-bold tracking-wider"
+                      style={{ color: isCurrent ? COLORS.goldLight : COLORS.white }}
+                    >
                       {MONTH_NAMES[month - 1].toUpperCase()}
                     </span>
                     {events.length > 0 && (
-                      <span style={{ color: COLORS.textDark, fontSize: 10 }}>{events.length} events</span>
+                      <span className="text-[#555555] text-[10px]">{events.length} events</span>
                     )}
                   </div>
                   {events.length === 0 && (
-                    <div style={{ color: COLORS.textDark, fontSize: 10 }}>No events</div>
+                    <div className="text-[#555555] text-[10px]">No events</div>
                   )}
                   {events.map(e => {
                     const isPast = e.week < game.week;
                     return (
-                      <div key={e.id} onClick={() => setSelectedEvent(e)} style={{
-                        padding: '6px 8px', marginBottom: 4, borderRadius: 6, cursor: 'pointer',
-                        background: selectedEvent?.id === e.id ? `${TIER_BADGE_COLORS[e.tier]}22` : 'transparent',
-                        border: `1px solid ${selectedEvent?.id === e.id ? TIER_BADGE_COLORS[e.tier] + '44' : 'transparent'}`,
-                        opacity: isPast ? 0.5 : 1,
-                        transition: 'all 0.15s',
-                      }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ color: COLORS.white, fontSize: 11, fontWeight: 'bold' }}>{e.name}</span>
-                          <span style={{ color: COLORS.textDark, fontSize: 9 }}>W{e.week}</span>
+                      <motion.div
+                        key={e.id}
+                        whileHover={{ scale: 1.02, x: 2 }}
+                        onClick={() => setSelectedEvent(e)}
+                        className="px-2 py-1.5 mb-1 rounded-md cursor-pointer transition-all"
+                        style={{
+                          background: selectedEvent?.id === e.id ? `${TIER_BADGE_COLORS[e.tier]}22` : 'transparent',
+                          border: `1px solid ${selectedEvent?.id === e.id ? TIER_BADGE_COLORS[e.tier] + '44' : 'transparent'}`,
+                          opacity: isPast ? 0.5 : 1,
+                        }}
+                      >
+                        <div className="flex justify-between items-center">
+                          <span className="text-white text-[11px] font-bold">{e.name}</span>
+                          <span className="text-[#555555] text-[9px]">W{e.week}</span>
                         </div>
-                        <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
+                        <div className="flex gap-1 mt-1">
                           <Badge text={e.tier} color={TIER_BADGE_COLORS[e.tier]} />
                           <Badge text={e.brand} color={BRAND_COLORS[e.brand] || COLORS.textMuted} />
-                          {e.isBooked && <Badge text="BOOKED" color={COLORS.green} />}
+                          {e.isBooked && (
+                            <span className="inline-flex items-center gap-0.5">
+                              <Check className="w-2.5 h-2.5 text-[#2ECC71]" />
+                              <Badge text="BOOKED" color={COLORS.green} />
+                            </span>
+                          )}
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })}
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         </div>
       </div>
 
       {/* Booking panel */}
-      <div style={{
-        width: selectedEvent ? 340 : 0, flexShrink: 0, overflow: 'hidden',
-        transition: 'width 0.3s ease', background: COLORS.bgPanel, borderLeft: `1px solid ${COLORS.border}`,
-      }}>
+      <AnimatePresence>
         {selectedEvent && (
-          <div style={{ width: 340, height: '100%', overflow: 'auto', padding: '18px 16px' }}>
-            <div style={{
-              background: `linear-gradient(135deg, ${TIER_BADGE_COLORS[selectedEvent.tier]}20, transparent)`,
-              border: `1px solid ${TIER_BADGE_COLORS[selectedEvent.tier]}44`,
-              borderRadius: 10, padding: 16, marginBottom: 16,
-            }}>
-              <div style={{ fontSize: 28, marginBottom: 6 }}>📅</div>
-              <div style={{ fontWeight: 'bold', fontSize: 20, color: COLORS.white }}>{selectedEvent.name}</div>
-              <div style={{ color: COLORS.textMuted, fontSize: 12, marginTop: 4 }}>Week {selectedEvent.week}</div>
-              <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-                <Badge text={selectedEvent.tier} color={TIER_BADGE_COLORS[selectedEvent.tier]} />
-                <Badge text={selectedEvent.brand} color={BRAND_COLORS[selectedEvent.brand] || COLORS.textMuted} />
-              </div>
-            </div>
-
-            <div style={{ background: COLORS.bgCard, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: 14, marginBottom: 14 }}>
-              <div style={{ color: COLORS.gold, fontSize: 10, fontWeight: 'bold', letterSpacing: 2, marginBottom: 10 }}>STATUS</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 6 }}>
-                <span style={{ color: COLORS.textMuted }}>Status</span>
-                <Badge text={selectedEvent.isBooked ? 'BOOKED' : 'UNBOOKED'} color={selectedEvent.isBooked ? COLORS.green : COLORS.orange} />
-              </div>
-              {selectedEvent.isBooked && selectedEvent.venueId && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-                  <span style={{ color: COLORS.textMuted }}>Venue</span>
-                  <span style={{ color: COLORS.white, fontWeight: 'bold' }}>
-                    {venues.find(v => v.id === selectedEvent.venueId)?.name || '?'}
-                  </span>
+          <motion.div
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 340, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="shrink-0 overflow-hidden bg-[#050505] border-l border-[#1a1a1a]"
+          >
+            <div className="w-[340px] h-full overflow-auto p-4">
+              <div
+                className="rounded-xl p-4 mb-4"
+                style={{
+                  background: `linear-gradient(135deg, ${TIER_BADGE_COLORS[selectedEvent.tier]}20, transparent)`,
+                  border: `1px solid ${TIER_BADGE_COLORS[selectedEvent.tier]}44`,
+                }}
+              >
+                <Calendar className="w-7 h-7 mb-1.5" style={{ color: TIER_BADGE_COLORS[selectedEvent.tier] }} />
+                <div className="font-bold text-xl text-white">{selectedEvent.name}</div>
+                <div className="text-[#888888] text-xs mt-1">Week {selectedEvent.week}</div>
+                <div className="flex gap-1.5 mt-2">
+                  <Badge text={selectedEvent.tier} color={TIER_BADGE_COLORS[selectedEvent.tier]} />
+                  <Badge text={selectedEvent.brand} color={BRAND_COLORS[selectedEvent.brand] || COLORS.textMuted} />
                 </div>
-              )}
-            </div>
-
-            {!selectedEvent.isBooked && selectedEvent.week >= game.week && (
-              <div style={{ background: COLORS.bgCard, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: 14, marginBottom: 14 }}>
-                <div style={{ color: COLORS.gold, fontSize: 10, fontWeight: 'bold', letterSpacing: 2, marginBottom: 10 }}>BOOK VENUE</div>
-                <select value={bookingVenueId} onChange={e => setBookingVenueId(e.target.value)}
-                  style={{ fontSize: 11, padding: '6px 10px', width: '100%', marginBottom: 10 }}>
-                  <option value="">-- Select Venue --</option>
-                  {venues.map(v => (
-                    <option key={v.id} value={v.id}>{v.flag} {v.name} ({v.city}, {v.capacity.toLocaleString()})</option>
-                  ))}
-                </select>
-                <button onClick={handleBook} disabled={!bookingVenueId} style={{
-                  width: '100%', padding: 8, borderRadius: 6, fontSize: 11, fontWeight: 'bold', cursor: bookingVenueId ? 'pointer' : 'not-allowed',
-                  background: bookingVenueId ? COLORS.green : COLORS.border,
-                  border: 'none', color: COLORS.white, letterSpacing: 1,
-                }}>
-                  CONFIRM BOOKING
-                </button>
               </div>
-            )}
 
-            <button onClick={() => setSelectedEvent(null)} style={{
-              width: '100%', padding: 8, background: 'transparent', border: `1px solid ${COLORS.border}`,
-              borderRadius: 5, color: COLORS.textDark, fontSize: 10, letterSpacing: 2, cursor: 'pointer',
-            }}>
-              CLOSE
-            </button>
-          </div>
+              <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg p-3.5 mb-3.5">
+                <div className="text-[#B8860B] text-[10px] font-bold tracking-[2px] mb-2.5">STATUS</div>
+                <div className="flex justify-between text-xs mb-1.5">
+                  <span className="text-[#888888]">Status</span>
+                  <Badge text={selectedEvent.isBooked ? 'BOOKED' : 'UNBOOKED'} color={selectedEvent.isBooked ? COLORS.green : COLORS.orange} />
+                </div>
+                {selectedEvent.isBooked && selectedEvent.venueId && (
+                  <div className="flex justify-between text-xs">
+                    <span className="text-[#888888] flex items-center gap-1">
+                      <MapPin className="w-3 h-3" /> Venue
+                    </span>
+                    <span className="text-white font-bold">
+                      {venues.find(v => v.id === selectedEvent.venueId)?.name || '?'}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {!selectedEvent.isBooked && selectedEvent.week >= game.week && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg p-3.5 mb-3.5"
+                >
+                  <div className="text-[#B8860B] text-[10px] font-bold tracking-[2px] mb-2.5">
+                    <MapPin className="w-3 h-3 inline mr-1" />
+                    BOOK VENUE
+                  </div>
+                  <select
+                    value={bookingVenueId}
+                    onChange={e => setBookingVenueId(e.target.value)}
+                    className="text-[11px] px-2.5 py-1.5 w-full mb-2.5 bg-[#0a0a0a] border border-[#1a1a1a] rounded text-[#e0e0e0]"
+                  >
+                    <option value="">-- Select Venue --</option>
+                    {venues.map(v => (
+                      <option key={v.id} value={v.id}>{v.flag} {v.name} ({v.city}, {v.capacity.toLocaleString()})</option>
+                    ))}
+                  </select>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={handleBook}
+                    disabled={!bookingVenueId}
+                    className="w-full py-2 rounded-md text-[11px] font-bold border-none text-white tracking-wider"
+                    style={{
+                      cursor: bookingVenueId ? 'pointer' : 'not-allowed',
+                      background: bookingVenueId ? COLORS.green : COLORS.border,
+                    }}
+                  >
+                    <Check className="w-3 h-3 inline mr-1" />
+                    CONFIRM BOOKING
+                  </motion.button>
+                </motion.div>
+              )}
+
+              <button
+                onClick={() => setSelectedEvent(null)}
+                className="w-full py-2 bg-transparent border border-[#1a1a1a] rounded text-[#555555] text-[10px] tracking-[2px] cursor-pointer hover:text-white hover:border-[#2a2a2a] transition-colors flex items-center justify-center gap-1"
+              >
+                <X className="w-3 h-3" /> CLOSE
+              </button>
+            </div>
+          </motion.div>
         )}
-      </div>
-    </div>
+      </AnimatePresence>
+    </motion.div>
   );
 }

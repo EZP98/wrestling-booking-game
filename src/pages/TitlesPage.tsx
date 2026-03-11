@@ -1,4 +1,6 @@
 import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Trophy, Crown, Clock, Star, X } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 import { COLORS, BRAND_COLORS } from '../styles/theme';
 import { StatBar, Badge } from '../components/StatBar';
@@ -9,6 +11,24 @@ const TIER_COLORS: Record<string, string> = {
   Midcard: COLORS.blue,
   Tag: COLORS.green,
   Specialty: COLORS.purple,
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.05, duration: 0.3, ease: 'easeOut' as const },
+  }),
+};
+
+const sectionVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.1, duration: 0.35, ease: 'easeOut' as const },
+  }),
 };
 
 export function TitlesPage() {
@@ -34,173 +54,258 @@ export function TitlesPage() {
   const s = selected;
 
   return (
-    <div className="fade-in" style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <div style={{ padding: '16px 20px', borderBottom: `1px solid ${COLORS.border}`, flexShrink: 0 }}>
-          <h1 style={{ fontSize: 20, color: COLORS.white, letterSpacing: 3, marginBottom: 12 }}>CHAMPIONSHIPS</h1>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+    <div className="flex h-full overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Header */}
+        <div className="shrink-0 border-b border-[#1a1a1a] px-5 py-4">
+          <div className="mb-3 flex items-center gap-3">
+            <Trophy className="h-5 w-5" style={{ color: COLORS.gold }} />
+            <h1 className="text-xl font-bold tracking-[3px] text-white">CHAMPIONSHIPS</h1>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
             {brands.map(b => (
-              <button key={b} onClick={() => setBrandFilter(b)} style={{
-                padding: '4px 10px', borderRadius: 16, fontSize: 10, fontWeight: 'bold',
-                border: `1px solid ${brandFilter === b ? (BRAND_COLORS[b] || COLORS.gold) : COLORS.border}`,
-                background: brandFilter === b ? `${BRAND_COLORS[b] || COLORS.gold}22` : 'transparent',
-                color: brandFilter === b ? COLORS.white : COLORS.textMuted,
-                cursor: 'pointer',
-              }}>{b}</button>
+              <button
+                key={b}
+                onClick={() => setBrandFilter(b)}
+                className={`cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-bold transition-all duration-150 ${
+                  brandFilter === b
+                    ? 'text-white'
+                    : 'text-[#888888] hover:text-white'
+                }`}
+                style={{
+                  border: `1px solid ${brandFilter === b ? (BRAND_COLORS[b] || COLORS.gold) : COLORS.border}`,
+                  background: brandFilter === b ? `${BRAND_COLORS[b] || COLORS.gold}22` : 'transparent',
+                }}
+              >
+                {b}
+              </button>
             ))}
           </div>
         </div>
 
-        <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px' }}>
-          {Object.entries(grouped).map(([brand, brandTitles]) => (
-            <div key={brand} style={{ marginBottom: 24 }}>
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12,
-                borderBottom: `2px solid ${BRAND_COLORS[brand] || COLORS.gold}44`, paddingBottom: 8,
-              }}>
-                <span style={{
-                  width: 10, height: 10, borderRadius: '50%',
-                  background: BRAND_COLORS[brand] || COLORS.gold,
-                }} />
-                <span style={{ color: BRAND_COLORS[brand] || COLORS.gold, fontSize: 13, fontWeight: 'bold', letterSpacing: 2 }}>
+        {/* Content */}
+        <div className="flex-1 overflow-auto px-5 py-4">
+          {Object.entries(grouped).map(([brand, brandTitles], sectionIdx) => (
+            <motion.div
+              key={brand}
+              custom={sectionIdx}
+              variants={sectionVariants}
+              initial="hidden"
+              animate="visible"
+              className="mb-6"
+            >
+              {/* Brand heading */}
+              <div
+                className="mb-3 flex items-center gap-2 pb-2"
+                style={{ borderBottom: `2px solid ${BRAND_COLORS[brand] || COLORS.gold}44` }}
+              >
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ background: BRAND_COLORS[brand] || COLORS.gold }}
+                />
+                <span
+                  className="text-[13px] font-bold tracking-[2px]"
+                  style={{ color: BRAND_COLORS[brand] || COLORS.gold }}
+                >
                   {brand.toUpperCase()}
                 </span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
-                {brandTitles.map(t => {
+
+              {/* Title cards grid */}
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-2.5">
+                {brandTitles.map((t, cardIdx) => {
                   const isSel = selected?.id === t.id;
                   return (
-                    <div key={t.id} onClick={() => setSelected(isSel ? null : t)} style={{
-                      background: isSel ? COLORS.bgHover : COLORS.bgCard,
-                      border: `1px solid ${isSel ? COLORS.gold : COLORS.border}`,
-                      borderLeft: `3px solid ${TIER_COLORS[t.tier] || COLORS.gold}`,
-                      borderRadius: 8, padding: 14, cursor: 'pointer', transition: 'all 0.15s',
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                    <motion.div
+                      key={t.id}
+                      custom={cardIdx}
+                      variants={cardVariants}
+                      initial="hidden"
+                      animate="visible"
+                      whileHover={{ scale: 1.02, transition: { duration: 0.15 } }}
+                      onClick={() => setSelected(isSel ? null : t)}
+                      className="cursor-pointer rounded-lg p-3.5 transition-colors duration-150"
+                      style={{
+                        background: isSel ? COLORS.bgHover : COLORS.bgCard,
+                        border: `1px solid ${isSel ? COLORS.gold : COLORS.border}`,
+                        borderLeft: `3px solid ${TIER_COLORS[t.tier] || COLORS.gold}`,
+                      }}
+                    >
+                      <div className="mb-2 flex items-start justify-between">
                         <div>
-                          <div style={{ color: COLORS.white, fontWeight: 'bold', fontSize: 14 }}>{t.name}</div>
-                          <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
+                          <div className="text-sm font-bold text-white">{t.name}</div>
+                          <div className="mt-1 flex gap-1">
                             <Badge text={t.tier} color={TIER_COLORS[t.tier] || COLORS.gold} />
                             {t.isTag && <Badge text="TAG" color={COLORS.purple} />}
                             {t.gender !== 'Any' && <Badge text={t.gender} color={COLORS.textMuted} />}
                           </div>
                         </div>
-                        <span style={{ fontSize: 22 }}>🏆</span>
+                        <Trophy className="h-5 w-5 shrink-0" style={{ color: COLORS.gold }} />
                       </div>
-                      <div style={{
-                        background: COLORS.bg, borderRadius: 6, padding: '8px 10px', marginBottom: 8,
-                        border: `1px solid ${COLORS.border}`,
-                      }}>
-                        <div style={{ color: COLORS.textDark, fontSize: 9, letterSpacing: 1, marginBottom: 4 }}>CURRENT HOLDER</div>
-                        <div style={{ color: t.holderId ? COLORS.white : COLORS.textDark, fontWeight: 'bold', fontSize: 13 }}>
+
+                      {/* Current holder */}
+                      <div className="mb-2 rounded-md border border-[#1a1a1a] bg-black px-2.5 py-2">
+                        <div className="mb-1 text-[9px] tracking-widest text-[#555555]">CURRENT HOLDER</div>
+                        <div className={`text-[13px] font-bold ${t.holderId ? 'text-white' : 'text-[#555555]'}`}>
                           {t.holderName || 'VACANT'}
                           {t.isTag && t.secondHolderName && ` & ${t.secondHolderName}`}
                         </div>
                         {t.holderId && (
-                          <div style={{ color: COLORS.textMuted, fontSize: 10, marginTop: 2 }}>
+                          <div className="mt-0.5 flex items-center gap-1 text-[10px] text-[#888888]">
+                            <Clock className="h-2.5 w-2.5" />
                             Reign: {t.reignWeeks} weeks
                           </div>
                         )}
                       </div>
+
                       <StatBar value={t.prestige} color={COLORS.gold} height={5} label="PRESTIGE" showValue />
-                    </div>
+                    </motion.div>
                   );
                 })}
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
 
       {/* Detail panel */}
-      <div style={{
-        width: s ? 360 : 0, flexShrink: 0, overflow: 'hidden',
-        transition: 'width 0.3s ease', background: COLORS.bgPanel, borderLeft: `1px solid ${COLORS.border}`,
-      }}>
+      <AnimatePresence>
         {s && (
-          <div style={{ width: 360, height: '100%', overflow: 'auto', padding: '18px 16px' }}>
-            <div style={{
-              background: `linear-gradient(135deg, ${COLORS.gold}20, transparent)`,
-              border: `1px solid ${COLORS.gold}44`,
-              borderRadius: 10, padding: 18, marginBottom: 16,
-            }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>🏆</div>
-              <div style={{ fontWeight: 'bold', fontSize: 20, color: COLORS.white }}>{s.name}</div>
-              <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-                <Badge text={s.brand} color={BRAND_COLORS[s.brand] || COLORS.textMuted} />
-                <Badge text={s.tier} color={TIER_COLORS[s.tier] || COLORS.gold} />
-                {s.isTag && <Badge text="TAG TEAM" color={COLORS.purple} />}
-                {s.gender !== 'Any' && <Badge text={s.gender} color={COLORS.textMuted} />}
-              </div>
-            </div>
+          <motion.div
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 360, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="shrink-0 overflow-hidden border-l border-[#1a1a1a] bg-[#050505]"
+          >
+            <div className="h-full w-[360px] overflow-auto px-4 py-[18px]">
+              {/* Header */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1, duration: 0.3 }}
+                className="mb-4 rounded-[10px] p-[18px]"
+                style={{
+                  background: `linear-gradient(135deg, ${COLORS.gold}20, transparent)`,
+                  border: `1px solid ${COLORS.gold}44`,
+                }}
+              >
+                <Trophy className="mb-2 h-8 w-8" style={{ color: COLORS.gold }} />
+                <div className="text-xl font-bold text-white">{s.name}</div>
+                <div className="mt-2 flex gap-1.5">
+                  <Badge text={s.brand} color={BRAND_COLORS[s.brand] || COLORS.textMuted} />
+                  <Badge text={s.tier} color={TIER_COLORS[s.tier] || COLORS.gold} />
+                  {s.isTag && <Badge text="TAG TEAM" color={COLORS.purple} />}
+                  {s.gender !== 'Any' && <Badge text={s.gender} color={COLORS.textMuted} />}
+                </div>
+              </motion.div>
 
-            <div style={{ background: COLORS.bgCard, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: 14, marginBottom: 14 }}>
-              <div style={{ color: COLORS.gold, fontSize: 10, fontWeight: 'bold', letterSpacing: 2, marginBottom: 10 }}>CURRENT REIGN</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 6 }}>
-                <span style={{ color: COLORS.textMuted }}>Champion</span>
-                <span style={{ color: COLORS.white, fontWeight: 'bold' }}>
-                  {s.holderName || 'VACANT'}
-                  {s.isTag && s.secondHolderName && ` & ${s.secondHolderName}`}
-                </span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 10 }}>
-                <span style={{ color: COLORS.textMuted }}>Reign Length</span>
-                <span style={{ color: COLORS.goldLight, fontWeight: 'bold' }}>{s.reignWeeks} weeks</span>
-              </div>
-              <StatBar value={s.prestige} color={COLORS.gold} height={6} label="PRESTIGE" showValue />
-            </div>
+              {/* Current Reign */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.15, duration: 0.3 }}
+                className="mb-3.5 rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] p-3.5"
+              >
+                <div className="mb-2.5 flex items-center gap-2">
+                  <Crown className="h-3 w-3" style={{ color: COLORS.gold }} />
+                  <span className="text-[10px] font-bold tracking-[2px]" style={{ color: COLORS.gold }}>CURRENT REIGN</span>
+                </div>
+                <div className="mb-1.5 flex items-center justify-between text-xs">
+                  <span className="text-[#888888]">Champion</span>
+                  <span className="font-bold text-white">
+                    {s.holderName || 'VACANT'}
+                    {s.isTag && s.secondHolderName && ` & ${s.secondHolderName}`}
+                  </span>
+                </div>
+                <div className="mb-2.5 flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-1 text-[#888888]">
+                    <Clock className="h-3 w-3" />
+                    Reign Length
+                  </span>
+                  <span className="font-bold" style={{ color: COLORS.goldLight }}>{s.reignWeeks} weeks</span>
+                </div>
+                <StatBar value={s.prestige} color={COLORS.gold} height={6} label="PRESTIGE" showValue />
+              </motion.div>
 
-            {/* Holder stats */}
-            {s.holderId && (() => {
-              const holder = wrestlers.find(w => w.id === s.holderId);
-              return holder ? (
-                <div style={{ background: COLORS.bgCard, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: 14, marginBottom: 14 }}>
-                  <div style={{ color: COLORS.gold, fontSize: 10, fontWeight: 'bold', letterSpacing: 2, marginBottom: 10 }}>CHAMPION STATS</div>
-                  {[
-                    ['Overness', holder.overness, COLORS.goldLight],
-                    ['In-Ring', holder.inRing, COLORS.green],
-                    ['Mic Skills', holder.mic, COLORS.blue],
-                    ['Popularity', holder.popularity, COLORS.purple],
-                  ].map(([label, value, color]) => (
-                    <div key={label as string} style={{ marginBottom: 6 }}>
-                      <StatBar value={value as number} color={color as string} height={4} label={label as string} showValue />
+              {/* Holder stats */}
+              {s.holderId && (() => {
+                const holder = wrestlers.find(w => w.id === s.holderId);
+                return holder ? (
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2, duration: 0.3 }}
+                    className="mb-3.5 rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] p-3.5"
+                  >
+                    <div className="mb-2.5 flex items-center gap-2">
+                      <Star className="h-3 w-3" style={{ color: COLORS.gold }} />
+                      <span className="text-[10px] font-bold tracking-[2px]" style={{ color: COLORS.gold }}>CHAMPION STATS</span>
                     </div>
-                  ))}
-                </div>
-              ) : null;
-            })()}
+                    {([
+                      ['Overness', holder.overness, COLORS.goldLight],
+                      ['In-Ring', holder.inRing, COLORS.green],
+                      ['Mic Skills', holder.mic, COLORS.blue],
+                      ['Popularity', holder.popularity, COLORS.purple],
+                    ] as const).map(([label, value, color]) => (
+                      <div key={label} className="mb-1.5">
+                        <StatBar value={value} color={color} height={4} label={label} showValue />
+                      </div>
+                    ))}
+                  </motion.div>
+                ) : null;
+              })()}
 
-            {/* History */}
-            <div style={{ background: COLORS.bgCard, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: 14, marginBottom: 14 }}>
-              <div style={{ color: COLORS.gold, fontSize: 10, fontWeight: 'bold', letterSpacing: 2, marginBottom: 10 }}>
-                TITLE HISTORY ({s.history.length})
-              </div>
-              {s.history.length === 0 && (
-                <div style={{ color: COLORS.textDark, fontSize: 11 }}>No previous reigns</div>
-              )}
-              {s.history.map((h, i) => (
-                <div key={i} style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '8px 0', borderBottom: i < s.history.length - 1 ? `1px solid ${COLORS.border}` : 'none',
-                }}>
-                  <div>
-                    <div style={{ color: COLORS.white, fontSize: 12, fontWeight: 'bold' }}>{h.holderName}</div>
-                    <div style={{ color: COLORS.textDark, fontSize: 10 }}>Won at: {h.wonAt}</div>
+              {/* History */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.25, duration: 0.3 }}
+                className="mb-3.5 rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] p-3.5"
+              >
+                <div className="mb-2.5 flex items-center gap-2">
+                  <Clock className="h-3 w-3" style={{ color: COLORS.gold }} />
+                  <span className="text-[10px] font-bold tracking-[2px]" style={{ color: COLORS.gold }}>
+                    TITLE HISTORY ({s.history.length})
+                  </span>
+                </div>
+                {s.history.length === 0 && (
+                  <div className="text-[11px] text-[#555555]">No previous reigns</div>
+                )}
+                {s.history.map((h, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between py-2"
+                    style={{
+                      borderBottom: i < s.history.length - 1 ? `1px solid ${COLORS.border}` : 'none',
+                    }}
+                  >
+                    <div>
+                      <div className="text-xs font-bold text-white">{h.holderName}</div>
+                      <div className="text-[10px] text-[#555555]">Won at: {h.wonAt}</div>
+                    </div>
+                    <div className="flex items-center gap-1 text-[11px] text-[#888888]">
+                      <Clock className="h-2.5 w-2.5" />
+                      {h.weeks}w
+                    </div>
                   </div>
-                  <div style={{ color: COLORS.textMuted, fontSize: 11 }}>{h.weeks}w</div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </motion.div>
 
-            <button onClick={() => setSelected(null)} style={{
-              width: '100%', padding: 8, background: 'transparent', border: `1px solid ${COLORS.border}`,
-              borderRadius: 5, color: COLORS.textDark, fontSize: 10, letterSpacing: 2, cursor: 'pointer',
-            }}>
-              CLOSE
-            </button>
-          </div>
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                onClick={() => setSelected(null)}
+                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-[#1a1a1a] bg-transparent py-2 text-[10px] tracking-[2px] text-[#555555] transition-colors hover:border-[#B8860B] hover:text-white"
+              >
+                <X className="h-3 w-3" />
+                CLOSE
+              </motion.button>
+            </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </div>
   );
 }

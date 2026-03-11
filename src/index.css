@@ -1,37 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #000000;
+  --color-card: #0a0a0a;
+  --color-card-hover: #111111;
+  --color-panel: #050505;
+  --color-border: #1a1a1a;
+  --color-border-light: #252525;
+  --color-gold: #B8860B;
+  --color-gold-light: #F1C40F;
+  --color-wwe-red: #E74C3C;
+  --color-wwe-blue: #3498DB;
+  --color-wwe-green: #2ECC71;
+  --color-wwe-purple: #8E44AD;
+  --color-wwe-orange: #FF6B35;
+  --color-muted: #888888;
+  --color-dim: #555555;
+  --font-family-display: 'Georgia', 'Times New Roman', serif;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: 'Georgia', 'Times New Roman', serif;
-  background: #070710;
+  font-family: var(--font-family-display);
+  background: var(--color-bg);
   color: #e0e0e0;
   overflow: hidden;
   height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
-#root {
-  height: 100vh;
-  overflow: hidden;
-}
+#root { height: 100vh; overflow: hidden; }
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #0d0d1a; }
-::-webkit-scrollbar-thumb { background: #2a2a4e; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #B8860B; }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-gold); }
 
-.fade-in { animation: fadeIn 0.3s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 0.25s ease-out; }
 
-button { cursor: pointer; transition: all 0.2s; font-family: inherit; }
-button:hover { filter: brightness(1.2); }
+button { cursor: pointer; transition: all 0.15s ease; font-family: inherit; }
 button:active { transform: scale(0.97); }
 
 input, select {
   font-family: inherit;
-  background: #0d0d1a;
-  border: 1px solid #1a1a2e;
+  background: #0a0a0a;
+  border: 1px solid #1a1a1a;
   color: #e0e0e0;
   padding: 8px 12px;
   border-radius: 6px;
   outline: none;
+  transition: border-color 0.15s;
 }
-input:focus, select:focus { border-color: #B8860B; }
+input:focus, select:focus { border-color: var(--color-gold); }

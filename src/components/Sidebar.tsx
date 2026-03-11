@@ -1,92 +1,138 @@
 import { useGameStore } from '../store/gameStore';
-import { COLORS, BRAND_COLORS } from '../styles/theme';
+import { motion } from 'framer-motion';
+import {
+  LayoutDashboard,
+  Users,
+  Trophy,
+  ClipboardList,
+  Calendar,
+  Swords,
+  Shield,
+  Building2,
+  Star,
+  PenTool,
+  Sprout,
+  ChevronRight,
+  type LucideIcon,
+} from 'lucide-react';
 
-const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-  { id: 'roster', label: 'Roster', icon: '💪' },
-  { id: 'titles', label: 'Titles', icon: '🏆' },
-  { id: 'booking', label: 'Booking', icon: '📋' },
-  { id: 'calendar', label: 'Calendar', icon: '📅' },
-  { id: 'feuds', label: 'Feuds', icon: '⚔️' },
-  { id: 'factions', label: 'Factions', icon: '👥' },
-  { id: 'venues', label: 'Venues', icon: '🏟️' },
-  { id: 'celebrities', label: 'Celebrity', icon: '⭐' },
-  { id: 'writers', label: 'Writers', icon: '✍️' },
-  { id: 'nxt', label: 'NXT Pipeline', icon: '🌱' },
+interface NavItem {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'roster', label: 'Roster', icon: Users },
+  { id: 'titles', label: 'Titles', icon: Trophy },
+  { id: 'booking', label: 'Booking', icon: ClipboardList },
+  { id: 'calendar', label: 'Calendar', icon: Calendar },
+  { id: 'feuds', label: 'Feuds', icon: Swords },
+  { id: 'factions', label: 'Factions', icon: Shield },
+  { id: 'venues', label: 'Venues', icon: Building2 },
+  { id: 'celebrities', label: 'Celebrity', icon: Star },
+  { id: 'writers', label: 'Writers', icon: PenTool },
+  { id: 'nxt', label: 'NXT Pipeline', icon: Sprout },
 ];
 
 export function Sidebar() {
   const { game, currentPage, setPage, advanceWeek } = useGameStore();
 
-  const monthNames = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  const budgetColor = game.budget > 0 ? 'text-wwe-green' : 'text-wwe-red';
+  const difficultyColor =
+    game.difficulty === 'Vince Mode'
+      ? 'text-wwe-red'
+      : game.difficulty === 'Veteran'
+        ? 'text-wwe-orange'
+        : 'text-wwe-blue';
 
   return (
-    <div style={{
-      width: 220, height: '100%', background: 'linear-gradient(180deg, #0a0015 0%, #0d0d1a 100%)',
-      borderRight: `1px solid ${COLORS.border}`, display: 'flex', flexDirection: 'column', flexShrink: 0,
-    }}>
+    <div className="w-[220px] h-full bg-black border-r border-border flex flex-col shrink-0">
       {/* Logo */}
-      <div style={{ padding: '16px 14px', borderBottom: `1px solid ${COLORS.border}` }}>
-        <div style={{ fontWeight: 'bold', fontSize: 14, color: COLORS.white, letterSpacing: 3 }}>WRESTLING</div>
-        <div style={{ color: COLORS.gold, fontSize: 11, letterSpacing: 4, marginTop: 2 }}>BOOKING GAME</div>
+      <div className="px-3.5 py-4 border-b border-border">
+        <div className="font-bold text-sm text-white tracking-[3px]">WRESTLING</div>
+        <div className="text-gold text-[11px] tracking-[4px] mt-0.5">BOOKING GAME</div>
       </div>
 
-      {/* Game info */}
-      <div style={{ padding: '12px 14px', borderBottom: `1px solid ${COLORS.border}`, background: '#0a0a14' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={{ color: COLORS.textMuted, fontSize: 10, letterSpacing: 1 }}>WEEK</span>
-          <span style={{ color: COLORS.goldLight, fontWeight: 'bold', fontSize: 14 }}>{game.week}</span>
+      {/* Game Info */}
+      <div className="px-3.5 py-3 border-b border-border bg-panel">
+        <div className="flex justify-between mb-1.5">
+          <span className="text-muted text-[10px] tracking-[1px]">WEEK</span>
+          <span className="text-gold-light font-bold text-sm">{game.week}</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={{ color: COLORS.textMuted, fontSize: 10, letterSpacing: 1 }}>DATE</span>
-          <span style={{ color: COLORS.text, fontSize: 12 }}>{monthNames[game.month]} {game.year}</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={{ color: COLORS.textMuted, fontSize: 10, letterSpacing: 1 }}>BUDGET</span>
-          <span style={{ color: game.budget > 0 ? COLORS.green : COLORS.red, fontWeight: 'bold', fontSize: 12 }}>
-            ${game.budget.toLocaleString()}k
+        <div className="flex justify-between mb-1.5">
+          <span className="text-muted text-[10px] tracking-[1px]">DATE</span>
+          <span className="text-[#e0e0e0] text-xs">
+            {monthNames[game.month]} {game.year}
           </span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-          <span style={{ color: COLORS.textMuted, fontSize: 10, letterSpacing: 1 }}>RATING</span>
-          <span style={{ color: COLORS.blue, fontWeight: 'bold', fontSize: 12 }}>{game.overallRating}/100</span>
+        <div className="flex justify-between mb-1.5">
+          <span className="text-muted text-[10px] tracking-[1px]">BUDGET</span>
+          <span className={`${budgetColor} font-bold text-xs`}>${game.budget.toLocaleString()}k</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <span style={{ color: COLORS.textMuted, fontSize: 10, letterSpacing: 1 }}>DIFFICULTY</span>
-          <span style={{
-            color: game.difficulty === 'Vince Mode' ? COLORS.red : game.difficulty === 'Veteran' ? COLORS.orange : COLORS.blue,
-            fontSize: 10, fontWeight: 'bold'
-          }}>{game.difficulty.toUpperCase()}</span>
+        <div className="flex justify-between mb-2">
+          <span className="text-muted text-[10px] tracking-[1px]">RATING</span>
+          <span className="text-wwe-blue font-bold text-xs">{game.overallRating}/100</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted text-[10px] tracking-[1px]">DIFFICULTY</span>
+          <span className={`${difficultyColor} text-[10px] font-bold`}>{game.difficulty.toUpperCase()}</span>
         </div>
       </div>
 
       {/* Navigation */}
-      <div style={{ flex: 1, overflow: 'auto', padding: '8px 0' }}>
-        {NAV_ITEMS.map(item => (
-          <button key={item.id} onClick={() => setPage(item.id)} style={{
-            display: 'flex', alignItems: 'center', gap: 10, width: '100%',
-            padding: '10px 14px', border: 'none', borderRadius: 0,
-            background: currentPage === item.id ? `${COLORS.gold}15` : 'transparent',
-            borderLeft: currentPage === item.id ? `3px solid ${COLORS.gold}` : '3px solid transparent',
-            color: currentPage === item.id ? COLORS.white : COLORS.textMuted,
-            fontSize: 13, textAlign: 'left',
-          }}>
-            <span style={{ fontSize: 16 }}>{item.icon}</span>
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </div>
+      <nav className="flex-1 overflow-auto py-2">
+        {NAV_ITEMS.map((item) => {
+          const isActive = currentPage === item.id;
+          const Icon = item.icon;
+
+          return (
+            <motion.button
+              key={item.id}
+              onClick={() => setPage(item.id)}
+              whileHover={{ x: 4 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+              className={`
+                flex items-center gap-2.5 w-full px-3.5 py-2.5
+                border-none text-left text-[13px]
+                border-l-[3px] transition-colors duration-150
+                ${
+                  isActive
+                    ? 'border-l-gold bg-gold/[0.08] text-white'
+                    : 'border-l-transparent text-muted hover:text-white hover:bg-white/[0.03]'
+                }
+              `}
+            >
+              <Icon
+                size={16}
+                className={`shrink-0 ${isActive ? 'text-gold' : 'text-muted'}`}
+              />
+              <span>{item.label}</span>
+            </motion.button>
+          );
+        })}
+      </nav>
 
       {/* Advance Week */}
-      <div style={{ padding: '12px 14px', borderTop: `1px solid ${COLORS.border}` }}>
-        <button onClick={advanceWeek} style={{
-          width: '100%', padding: '12px', border: `1px solid ${COLORS.gold}`,
-          background: `linear-gradient(135deg, ${COLORS.gold}22, transparent)`,
-          color: COLORS.gold, borderRadius: 6, fontWeight: 'bold', fontSize: 13,
-          letterSpacing: 2,
-        }}>
-          NEXT WEEK →
-        </button>
+      <div className="px-3.5 py-3 border-t border-border">
+        <motion.button
+          onClick={advanceWeek}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+          className="
+            w-full py-3 rounded-md
+            border border-gold bg-gold/[0.08]
+            text-gold font-bold text-[13px] tracking-[2px]
+            flex items-center justify-center gap-2
+            hover:bg-gold/[0.15] transition-colors duration-150
+          "
+        >
+          NEXT WEEK
+          <ChevronRight size={16} />
+        </motion.button>
       </div>
     </div>
   );
